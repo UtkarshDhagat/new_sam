@@ -28,7 +28,7 @@ int main(){
         }
         min_cost=1000000;
         bool visited[12]={false};
-        cout<<tsp(m,0,n,1,visited,0)<<endl;;
+        visited[0]=true;
+        cout<<tsp(m,0,n,0,visited,1)<<endl;;
     }
 }
-
