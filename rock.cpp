@@ -1,27 +1,27 @@
 #include <iostream>
+#include <climits>
 #include <queue>
 #include <cmath>
-#include <cstring>
 using namespace std;
 
-// Check if destination is reachable under given difficulty level
-bool canReach(int n, int m, int grid[10][10], int level) {
-    queue<pair<int, int>> q;
-    bool visited[10][10]; // Tracks visited cells
-    memset(visited, false, sizeof(visited));
+bool canreach(int level, int n, int m, int grid[50][50], bool visited[50][50]) {
+    // Reset visited
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+            visited[i][j] = false;
 
-    // Start from bottom-left
+    queue<pair<int, int>> q; // 
     q.push({n - 1, 0});
     visited[n - 1][0] = true;
 
     while (!q.empty()) {
-        int x = q.front().first; // current row
-        int y = q.front().second; // current column
+        int x = q.front().first;
+        int y = q.front().second;
         q.pop();
 
-        if (grid[x][y] == 3) return true; // reached goal
+        if (grid[x][y] == 3) return true;
 
-        // Move vertically in same column if within height difference
+        // Vertical moves (same column)
         for (int i = 0; i < n; i++) {
             if (!visited[i][y] && grid[i][y] > 0 && abs(i - x) <= level) {
                 visited[i][y] = true;
@@ -29,36 +29,37 @@ bool canReach(int n, int m, int grid[10][10], int level) {
             }
         }
 
-        // Move left
-        if (y - 1 >= 0 && grid[x][y - 1] > 0 && !visited[x][y - 1]) {
+        // Left move
+        if (y > 0 && grid[x][y - 1] > 0 && !visited[x][y - 1]) {
             visited[x][y - 1] = true;
             q.push({x, y - 1});
         }
 
-        // Move right
+        // Right move
         if (y + 1 < m && grid[x][y + 1] > 0 && !visited[x][y + 1]) {
             visited[x][y + 1] = true;
             q.push({x, y + 1});
         }
     }
 
-    return false; // goal not reachable at this level
+    return false;
 }
 
 int main() {
-    int n, m;
+    int n, m; 
     cin >> n >> m;
 
-    int grid[10][10]; // Input grid
-    for (int i = 0; i < n; i++)         // Read each row
-        for (int j = 0; j < m; j++)     // Read each column
+    int grid[50][50];
+    bool visited[50][50]; 
+
+    for (int i = 0; i < n; i++)           
+        for (int j = 0; j < m; j++)
             cin >> grid[i][j];
 
-    // Try difficulty levels from 0 to n-1
     for (int level = 0; level < n; level++) {
-        if (canReach(n, m, grid, level)) {
-            cout << level << endl; // Print minimum level that works
-            break;
+        if (canreach(level, n, m, grid, visited)) {
+            cout << level << endl;
+            break; 
         }
     }
 
