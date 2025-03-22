@@ -2,52 +2,48 @@
 #include <string>
 using namespace std;
 
-int main() {
-    int k;
-    string s;
-    cin >> k >> s; // Read depth k and the nested string s
+int idx = 0;  // global index for parsing
 
-    int level = -1;     // Current nesting level (starts from -1 so first '(' brings it to 0)
-    int sum = 0;        // Final sum of numbers at depth k
-    int num = 0;        // To store the current number being read
-    bool reading = false; // Indicates if we're currently reading a number
-    bool neg = false;     // Indicates if the current number is negative
+// Function to extract an integer from the string at current index
+int getNumber(const string& s) {
+    int num = 0, sign = 1;
+    if (s[idx] == '-') {
+        sign = -1;
+        idx++;
+    }
+    while (isdigit(s[idx])) {
+        num = num * 10 + (s[idx++] - '0');
+    }
+    return num * sign;
+}
 
-    // Loop through each character in the string
-    for (int i = 0; i < s.length(); i++) {
-        char c = s[i];
+// Recursive function to parse the tree and compute sum at level K
+int getSumAtLevel(const string& s, int level, int K) {
+    if (s[idx] != '(') return 0;
+    idx++;  // skip '('
 
-        if (c == '(') {
-            level++;       // Going one level deeper
-            reading = false; // Reset reading state
-        } else if (c == ')') {
-            // If a number was being read and we are at the target depth
-            if (reading && level == k) {
-                if (neg == true) {
-                    sum = sum - num;
-                } else {
-                    sum = sum + num;
-                }
-            }
-            // Reset state for next potential number
-            reading = false;
-            num = 0;
-            neg = false;
-            level--;       // Exiting one level
-        } else if (c == '-') {
-            neg = true; // Mark that the next number is negative
-        } else if (c >= '0' && c <= '9') {
-            if (reading == false) {
-                reading = true;          // Start reading a new number
-                num = c - '0';           // Convert char to int
-            } else {
-                num = num * 10 + (c - '0'); // Continue building multi-digit number
-            }
-        }
+    if (s[idx] == ')') {
+        idx++;  // skip ')'
+        return 0;
     }
 
-    // Output the final sum
-    cout << sum << endl;
+    int val = getNumber(s);
+    int left = getSumAtLevel(s, level + 1, K);
+    int right = getSumAtLevel(s, level + 1, K);
 
+    idx++;  // skip ')'
+
+    if (level == K) return val + left + right;
+    return left + right;
+}
+
+int main() {
+    int K;
+    string tree;
+    cin >> K;
+    cin.ignore();           // ignore newline
+    getline(cin, tree);     // read tree string
+    idx = 0;                // reset index for fresh parsing
+    cout << getSumAtLevel(tree, 0, K) << endl;
     return 0;
 }
