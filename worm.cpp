@@ -1,12 +1,12 @@
 #include <iostream>
 #include <vector>
 #include <climits>
-
+#include <cmath>
 using namespace std;
 
 struct worm {
     int ex, ey;   // Entry
-    int exx, exy; // Exit
+    int exx, eyy; // Exit
     int cost;
 };
 
@@ -14,26 +14,26 @@ int manhattan(int x1, int y1, int x2, int y2) {
     return abs(x1 - x2) + abs(y1 - y2);
 }
 
-void dfs(int x, int y, int dx, int dy, vector<worm>& wormholes, vector<bool>& used, int cost, int& minCost) {
-    // Base case: try walking directly from current position to destination
-    minCost = min(minCost, cost + manhattan(x, y, dx, dy));
+// DFS function to explore all paths
+void dfs(int sx, int sy, int tx, int ty, int value, int &mincost,
+         vector<worm> &wormhole, vector<bool> &visited) {
 
-    int n = wormholes.size();
-    for (int i = 0; i < n; ++i) {
-        if (!used[i]) {
-            used[i] = true;
+    // Try direct path to destination
+    mincost = min(mincost, value + manhattan(sx, sy, tx, ty));
 
-            // Try entering from ex, ey → exit to exx, exy
-            int toEntry = manhattan(x, y, wormholes[i].ex, wormholes[i].ey);
-            dfs(wormholes[i].exx, wormholes[i].exy, dx, dy, wormholes, used,
-                cost + toEntry + wormholes[i].cost, minCost);
+    for (int i = 0; i < wormhole.size(); i++) {
+        if (!visited[i]) {
+            visited[i] = true;
 
-            // Try entering from exx, exy → exit to ex, ey
-            int toExit = manhattan(x, y, wormholes[i].exx, wormholes[i].exy);
-            dfs(wormholes[i].ex, wormholes[i].ey, dx, dy, wormholes, used,
-                cost + toExit + wormholes[i].cost, minCost);
+            // Try entry -> exit
+            int cost1 = value + manhattan(sx, sy, wormhole[i].ex, wormhole[i].ey) + wormhole[i].cost;
+            dfs(wormhole[i].exx, wormhole[i].eyy, tx, ty, cost1, mincost, wormhole, visited);
 
-            used[i] = false; // backtrack
+            // Try exit -> entry (reverse)
+            int cost2 = value + manhattan(sx, sy, wormhole[i].exx, wormhole[i].eyy) + wormhole[i].cost;
+            dfs(wormhole[i].ex, wormhole[i].ey, tx, ty, cost2, mincost, wormhole, visited);
+
+            visited[i] = false;
         }
     }
 }
@@ -44,19 +44,21 @@ int main() {
     while (t--) {
         int n;
         cin >> n;
+
         int sx, sy, dx, dy;
         cin >> sx >> sy >> dx >> dy;
 
         vector<worm> wormholes(n);
         for (int i = 0; i < n; ++i) {
             cin >> wormholes[i].ex >> wormholes[i].ey
-                >> wormholes[i].exx >> wormholes[i].exy
+                >> wormholes[i].exx >> wormholes[i].eyy
                 >> wormholes[i].cost;
         }
 
         vector<bool> used(n, false);
         int minCost = INT_MAX;
-        dfs(sx, sy, dx, dy, wormholes, used, 0, minCost);
+
+        dfs(sx, sy, dx, dy, 0, minCost, wormholes, used);
         cout << minCost << endl;
     }
     return 0;
